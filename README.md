@@ -1,9 +1,9 @@
 # ansible-shelly
-ansible framework to install Allterco Robotics shelly devices on your network
+ansible framework to install Allterco Robotics shelly devices on your network.
+You can configure all of your local or remote shelly devices gen1 and gen2.
 
-you can configure all of your local or remote shelly devices gen1 and gen2.
-
-installation:
+##installation:
+ ```
  cd ansible-shelly
  #clone this repository
  git clone https://github.com/elbrondor/ansible-shelly.git
@@ -15,3 +15,4 @@ installation:
  #for eatch shelly you can create it's own defaults see examples in host_vars/
  #but keep in mind to copy all settings from the default. Current it's not possible
  #to overwrite one item.
+ ```
