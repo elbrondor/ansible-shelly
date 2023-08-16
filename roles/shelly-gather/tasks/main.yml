@@ -1,0 +1,70 @@
+---
+
+- name: get shelly basic infos
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/shelly"
+  delegate_to: localhost
+  register: basicinfo
+
+- name: get shelly settings
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  register: settings
+
+- name: translate basic info
+  ansible.builtin.set_fact:
+    shellybasic: "{{ basicinfo.json }}"
+    shellysettings: "{{ settings.json }}"
+
+- name: compat set model
+  ansible.builtin.set_fact:
+    shellymodel: "{{ shellybasic.type }}"
+
+- name: check if the host var file exists
+  ansible.builtin.stat:
+    path: host_vars/{{ inventory_hostname }}.yml
+  register: st
+
+- name: write host file if needed
+  ansible.builtin.copy:
+    dest: host_vars/{{ inventory_hostname }}.yml
+    content: |
+      ---
+      #   --->  host_vars/{{ inventory_hostname }}.yml
+      shelly-type: {{ shellybasic.type }}
+      shelly-mac: {{ shellysettings.device.mac|lower }}
+      shelly-sw-version: {{ shellysettings.fw }}
+      shelly-hw-version: {{ shellysettings.hwinfo.hw_revision }}
+  when: st.stat.exists != true
+
+- name: read whole config file for {{ inventory_hostname }}
+  ansible.builtin.slurp:
+    path: "host_vars/{{ inventory_hostname }}.yml"
+  delegate_to: localhost
+  register: shellycfg
+
+- name: translate config to yaml
+  ansible.builtin.set_fact:
+    mydata: "{{ shellycfg['content'] | b64decode | from_yaml }}"
+
+- name: combine the new values
+  ansible.builtin.set_fact:
+    mydata: "{{ mydata | combine(newdata) }}"  
+  vars:
+    newdata:
+      shelly-type: "{{ shellybasic.type }}"
+      shelly-mac: "{{ '{}{}:{}{}:{}{}:{}{}:{}{}:{}{}'.format(*shellysettings.device.mac)|lower }}"
+      shelly-sw-version: "{{ shellysettings.fw }}"
+      shelly-hw-version: "{{ shellysettings.hwinfo.hw_revision }}"
+      shellygen: "{{ shellygen }}"
+      shellyname: "{{ shellysettings.name }}"
+
+- name: write host file
+  ansible.builtin.copy:
+    dest: host_vars/{{ inventory_hostname }}.yml
+    content: "{{ mydata | to_nice_yaml }}"

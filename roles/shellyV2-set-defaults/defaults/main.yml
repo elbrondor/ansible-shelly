@@ -1,0 +1,76 @@
+shellyconfig:
+  shellyset:
+    channel: "Sys.SetConfig"
+    item: "config"
+    data:
+      device:
+        name: "{{ inventory_hostname_short }}"
+        eco_mode: true
+        discoverable: false
+        addon_type:
+      location:
+        tz: "{{ timezone }}"
+        lat: "{{ lat }}"
+        lon: "{{ lng }}"
+      debug:
+        mqtt: false
+        websocket: false
+        udp: false
+      sntp: 
+        server: "{{ shellies.sntp.server }}"
+
+cloudconfig:
+  shellyset:
+    channel: "Cloud.SetConfig"
+    item: "config"
+    data:
+      enable: false  
+
+wificonfig:
+  shellyset:
+    channel: "Wifi.SetConfig"
+    item: "config"
+    data:
+      ap:
+        enable: false
+
+      sta:
+        enable: true      
+        is_open: false
+        ip: null
+        netmask: null
+        gw: null
+        nameserver: null
+        ipv4mode: "dhcp"
+      sta1:
+        enable: false
+        is_open: false
+        ip: null
+        netmask: null
+        gw: null
+        nameserver: null
+
+bleconfig:
+  shellyset:
+    channel: "BLE.SetConfig"
+    item: "config"
+    data:
+      config:
+        enable: false
+
+mqttconfig:
+  shellyset:
+    channel: "MQTT.SetConfig"
+    item: "config"
+    data:
+      enable: true
+      server: "{{ shellies.mqtt.server }}"
+      user: "{{ shellies.mqtt.user }}"
+      pass: "{{ shellies.mqtt.pass }}"
+      topic_prefix: "{{ inventory_hostname_short }}"
+      client_id: "{{ inventory_hostname_short }}"
+      enable_control: true
+      status_ntf: true
+      rpc_ntf: true
+      mqtt_max_qos: "{{ shellies.mqtt.max_qos }}"
+      mqtt_retain: "{{ shellies.mqtt.mqtt_retain }}"

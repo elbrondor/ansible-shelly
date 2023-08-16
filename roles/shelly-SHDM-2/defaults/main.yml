@@ -1,0 +1,30 @@
+mysettings:
+  factory_reset_from_switch: true
+  led_status_disable: true
+  zcross_debounce: 150
+  pulse_mode: 2
+  bypass: false
+  load_autodetect: false
+  min_brightness: 5
+  transition: 2000
+
+mysettingslight:
+  default_state: "off"
+  auto_on: 0
+  auto_off: 0
+  schedule: false
+  btn_type: "edge"
+  btn_debounce: 200
+  swap_inputs: false
+
+mysettingsnight:
+  enabled: true
+  start_time: "23:00"
+  end_time: "06:00"
+  brightness: 10
+
+mysettingswarm:
+  enabled: true
+  brightness: 20
+  time: 25  
+

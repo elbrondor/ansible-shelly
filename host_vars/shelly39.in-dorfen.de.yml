@@ -1,0 +1,16 @@
+mysettings:
+    led_status_disable: false
+    max_power: 3500
+mysettingsrelay:
+    appliance_type: powermeter
+    auto_off: 0
+    auto_on: 0
+    default_state: false
+    max_power: 3500
+    schedule: false
+shelly-hw-version: prod-191018
+shelly-mac: 84:f3:eb:db:28:64
+shelly-sw-version: 20230503-101325/v1.13.0-g9aed950
+shelly-type: SHPLG2-1
+shellygen: 1
+shellyname: shelly39

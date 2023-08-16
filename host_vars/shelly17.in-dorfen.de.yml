@@ -1,0 +1,6 @@
+---
+#   --->  host_vars/shelly17.in-dorfen.de.yml
+shelly-type: SHPLG2-1
+shelly-mac: 84f3ebdb28f7
+shelly-sw-version: 20220209-094231/v1.11.8-g8c7bb8d
+shelly-hw-version: prod-191018

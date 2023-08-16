@@ -1,0 +1,26 @@
+---
+
+- name: get shelly settings
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/reboot"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  register: settings
+
+- name: delay till shelly is rebooting
+  ansible.builtin.wait_for:
+    timeout: 10
+  delegate_to: localhost
+
+
+- name: wait till shelly is back
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/shelly"
+  delegate_to: localhost
+  register: response
+  retries: 50
+  delay: 10
+  until: response is defined and response.status == 200

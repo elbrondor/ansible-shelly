@@ -1,0 +1,21 @@
+mysettings:
+    factory_reset_from_switch: true
+    led_status_disable: true
+    longpush_time: 1200
+    max_power: 3500
+    supply_voltage: 1
+mysettingsrelay:
+    appliance_type: powermeter
+    auto_off: 0
+    auto_on: 0
+    btn_reverse: 0
+    btn_type: edge
+    default_state: false
+    max_power: 3500
+    schedule: false
+shelly-hw-version: prod-191219
+shelly-mac: f4:cf:a2:e3:81:43
+shelly-sw-version: 20230503-101420/v1.13.0-g9aed950
+shelly-type: SHSW-PM
+shellygen: 1
+shellyname: shelly16

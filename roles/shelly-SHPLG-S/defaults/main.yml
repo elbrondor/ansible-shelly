@@ -1,0 +1,10 @@
+mysettings:
+  max_power: 2500
+
+mysettingsrelay:
+  appliance_type: powermeter
+  default_state: off
+  auto_on: 0
+  auto_off: 0
+  schedule: false
+  max_power:  2500

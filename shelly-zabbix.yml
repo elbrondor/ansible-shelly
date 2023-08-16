@@ -1,0 +1,6 @@
+---
+- hosts: all
+  name: update shelly in zabbix
+  gather_facts: false
+  roles:
+    - shelly-zabbix

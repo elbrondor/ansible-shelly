@@ -1,0 +1,98 @@
+---
+
+- ansible.builtin.set_fact:
+    api:
+      username: "{{ shellies.web.user }}"
+      password: "{{ shellies.web.pass }}"
+      url: "http://{{ inventory_hostname }}/rpc/Shelly.Reboot"
+      requestMethod: "POST"
+    digestRequestValues:
+      nc: "00000001"
+      cnonce: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+    digestAuthorizationHeader: []
+
+- ansible.builtin.set_fact:
+    api: "{{ api | combine( {'uri' : api.url.split('.de') | last }) }}"
+
+- name: Make initial request to receive digest response data
+  ansible.builtin.uri:
+    url: "{{ api.url }}"
+    method: "{{ api.requestMethod }}"
+    status_code: 401
+  register: unauthorizedApiResponse
+
+- name: Create a dictionary containing the digest data from the www-authenticate response header
+  ansible.builtin.set_fact:
+    digestResponseHeaderValues: "{{ digestResponseHeaderValues | default({}) | combine ({ (iitem.split('=')[0] | trim) : (iitem.split('=')[1] | regex_replace('\"', \"\")) }) }}"
+  with_items: "{{ unauthorizedApiResponse.www_authenticate.replace('Digest','').split(',') }}"
+  loop_control:
+    loop_var: iitem
+
+- name: "Calculate HA1 from the digest response formula - sha256(username:realm:password)"
+  ansible.builtin.set_fact:
+    digestRequestValues: "{{ digestRequestValues | combine ({ 'HA1' : [api.username, digestResponseHeaderValues.realm, api.password] | join(':') | hash('sha256') }) }}"
+
+- name: "Calculate HA2 from the digest response formula - sha256(requestMethod:URI)"
+  ansible.builtin.set_fact:
+    digestRequestValues: "{{ digestRequestValues | combine ({ 'HA2' : [api.requestMethod, api.uri] | join(':') | hash('sha256') }) }}"
+
+- name: "Build array containing the digest response values in proper sequence (HA1:nonce:nc:cnonce:qop:HA2)"
+  ansible.builtin.set_fact:
+    digestRequestValues: "{{ digestRequestValues | combine({ 'response' : ( ( digestRequestValues['response'] | default([]) ) + [iitem]) }) }}"
+  with_items:
+    - "{{ digestRequestValues.HA1 }}"
+    - "{{ digestResponseHeaderValues.nonce }}"
+    - "{{ digestRequestValues.nc }}"
+    - "{{ digestRequestValues.cnonce }}"
+    - "{{ digestResponseHeaderValues.qop }}"
+    - "{{ digestRequestValues.HA2 }}"
+  loop_control:
+    loop_var: iitem
+
+- name: "Create the final encrypted digest response string by joining the above elements - sha256(HA1:nonce:nc:cnonce:qop:HA2)"
+  ansible.builtin.set_fact:
+    digestRequestValues: "{{ digestRequestValues | combine({ 'response' : (digestRequestValues['response'] | join(':') | hash('sha256')) }) }}"
+
+- name: "Build array containing each element of the digest (authorization) header"
+  ansible.builtin.set_fact:
+    digestAuthorizationHeader: "{{ digestAuthorizationHeader | default([]) + [iitem]}}"
+  with_items:
+    - "Digest username=\"{{ api.username }}\""
+    - "realm=\"{{ digestResponseHeaderValues.realm }}\""
+    - "nonce=\"{{ digestResponseHeaderValues.nonce }}\""
+    - "uri=\"{{ api.uri }}\""
+    - "cnonce=\"{{ digestRequestValues.cnonce }}\""
+    - "nc={{ digestRequestValues.nc }}"
+    - "qop={{ digestResponseHeaderValues.qop }}"
+    - "response=\"{{ digestRequestValues.response }}\""
+    - "algorithm=\"{{ digestResponseHeaderValues.algorithm }}\""
+  loop_control:
+    loop_var: iitem
+
+- name: "Create the final digest Authorization comma separated string"
+  ansible.builtin.set_fact:
+    digestAuthorizationHeader: "{{ digestAuthorizationHeader | join(', ') }}"
+
+- name: Now do the reboot
+  ansible.builtin.uri:
+    url: "{{ api.url }}"
+    method: "{{ api.requestMethod }}"
+    status_code: 200,404
+    headers:
+      Authorization: "{{ digestAuthorizationHeader }}"
+  register: authorizedApiResponse
+
+- name: delay till shelly is rebooting
+  ansible.builtin.wait_for:
+    timeout: 10
+  delegate_to: localhost
+
+- name: wait till web service is back again
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/shelly"
+  delegate_to: localhost
+  register: basicinfo
+  until: basicinfo.status == 200
+  retries: 30
+  delay: 2

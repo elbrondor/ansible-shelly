@@ -1,0 +1,52 @@
+---
+- hosts: all
+  name: init a shelly with default values and gather all information
+  gather_facts: false
+  connection: local
+  roles:
+    - shelly-get-gen
+
+  tasks:
+  - name: set v1 roles
+    ansible.builtin.set_fact:
+      shellyroles: 
+        - shelly-set-defaults
+        - shelly-gather
+    when: shellygen == 1
+
+  - name: set V2 roles
+    ansible.builtin.set_fact:
+      shellyroles:
+        - shellyV2-set-defaults
+        - shellyV2-gather
+    when: shellygen == "2"
+
+  - debug:
+      msg: "shelly gen: {{ shellygen }}"
+
+
+  - name: play all neded gen 1 roles
+    include_role:
+      name: "{{ item }}"
+    loop: "{{ shellyroles }}"
+
+  - name: exists there a type role for the shelly
+    ansible.builtin.stat:
+      path: roles/shelly-{{ shellymodel }}
+    register: st
+
+  - name: play the specific type role shelly-{{ shellymodel }}
+    include_role:
+      name: shelly-{{ shellymodel }}
+    when: st.stat.exists == true
+
+#   ---> shelly reboot
+  - name: shelly v1 reboot
+    ansible.builtin.include_role:
+      name: shelly-reboot
+    when: shellygen == 1
+
+  - name: shelly v2 reboot
+    ansible.builtin.include_role:
+      name: shellyV2-reboot
+    when: shellygen == "2"

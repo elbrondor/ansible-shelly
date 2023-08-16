@@ -1,0 +1,230 @@
+---
+
+- name: get shelly infos
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/shelly"
+  delegate_to: localhost
+  register: basicinfo
+  retries: 30
+  delay: 2
+  until: basicinfo is defined and basicinfo.status == 200
+
+- name: Show me    
+  debug:
+    var: basicinfo.json.type,basicinfo.json.auth
+
+- name: set login password
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings/login?username={{ shellies.web.user }}&password={{ shellies.web.pass }}&enabled=1"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  register: shellyinfo
+  when: basicinfo.json.auth != True
+
+- name: get shelly settings
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  register: settings
+  retries: 30
+  delay: 2
+  until: settings is defined and settings.status == 200
+
+- name: set mqtt enable
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?mqtt_enable={{ shellies.mqtt.enabled }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost      
+
+- name: set mqtt server
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?mqtt_server={{ shellies.mqtt.server }}&mqtt_id={{ inventory_hostname_short }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+
+- name: set mqtt user
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?mqtt_user={{ shellies.mqtt.user }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost      
+
+- name: set mqtt password
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?mqtt_pass={{ shellies.mqtt.pass }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+
+- name: set mqtt parameters
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?mqtt_update_period={{ shellies.mqtt.update_period }}&mqtt_clean_session={{ shellies.mqtt.clean }}&mqtt_max_qos={{ shellies.mqtt.max_qos}}&mqtt_retain={{ shellies.mqtt.mqtt_retain }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+
+- name: reboot the shelly
+  include_role:
+    name: shelly-reboot  
+
+- name: check mqtt
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  register: settings
+
+- name: set sntp server
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?sntp_server={{ shellies.sntp.server }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  when: settings.json.sntp.enabled != True or settings.json.sntp.server != shellies.sntp.server
+    
+- name: set timezone
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?timezone={{ timezone }}&tzautodetect=false"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  when:  settings.json.timezone != timezone
+
+- name: set geolocation
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?lat={{ lat }}&lng={{ lng }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  when:  settings.json.lat != lat or settings.json.lng != lng
+      
+- name: disable cloud
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?cloud.enabled=false"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  when:  settings.json.cloud.enabled != false
+
+- name: set name to {{ inventory_hostname_short }}
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?name={{ inventory_hostname_short }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  when:  settings.json.name != inventory_hostname_short
+
+- name: set device discovery to {{ shellies.discoverable }}
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?discoverable={{ shellies.discoverable }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  when:  settings.json.discoverable != shellies.discoverable 
+    
+- name: set wifirecovery reboot to {{ shellies.wifirecovery_reboot_enabled }}
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?wifirecovery_reboot_enabled={{ shellies.wifirecovery_reboot_enabled }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+
+- name: set wifi ap roaming enabled
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?ap_roaming_enabled={{ shellies.ap_roaming.enabled }}&ap_roaming_threshold={{ shellies.ap_roaming.threshold }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  when:  basicinfo.json.type != 'SHMOS-02' and basicinfo.json.type != 'SHMOS-01' and settings.json.ap_roaming.enabled == shellies.ap_roaming.enabled and settings.json.ap_roaming.threshold == shellies.ap_roaming.threshold
+
+- name: disable coiot
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?coiot_enable=false"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  when: settings.json.coiot.enabled != false
+      
+- name: disable debug
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?debug_enable=false"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  when: basicinfo.json.type != 'SHMOS-02' and basicinfo.json.type != 'SHMOS-01' and settings.json.debug_enable == false
+
+- name: enable eco mode
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?eco_mode_enabled={{ shellies.eco_mode }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  when: basicinfo.json.type != 'SHMOS-02' and basicinfo.json.type != 'SHMOS-01' and basicinfo.json.type != 'SHDM-2' and settings.json.eco_mode_enabled == shellies.eco_mode 
+        
+
+- name: set wifi ssid1
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings/sta?ssid={{ shellies.wifi1.ssid }}&key={{ shellies.wifi1.key }}&ipv4_method={{ shellies.wifi1.ipv4_method }}&enabled={{ shellies.wifi1.enable }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  when: settings.json.wifi_sta.ssid != shellies.wifi1.ssid or settings.json.wifi_sta.enabled != shellies.wifi1.enable or settings.json.wifi_sta.ipv4_method != shellies.wifi1.ipv4_method
+  register: resultssid1
+  retries: 30
+  delay: 2
+  until: resultssid1 is defined and resultssid1.status == 200
+
+
+- name: set wifi ssid2    
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings/sta1?ssid={{ shellies.wifi2.ssid }}&key={{ shellies.wifi2.key }}&ipv4_method={{ shellies.wifi2.ipv4_method }}&enabled={{ shellies.wifi2.enable }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  when: basicinfo.json.type != 'SHMOS-02' and basicinfo.json.type != 'SHMOS-01' and settings.json.wifi_sta1.ssid == shellies.wifi2.ssid and settings.json.wifi_sta1.enabled == shellies.wifi2.enable and settings.json.wifi_sta1.ipv4_method == shellies.wifi2.ipv4_method
+  register: resultssid2
+  retries: 30
+  delay: 2
+  until: resultssid2 is defined and resultssid2.status == 200
+
+
+- name: get shelly settings
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  register: settings
+  retries: 30
+  delay: 2
+  until: settings is defined and settings.status == 200
+    

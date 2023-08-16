@@ -1,0 +1,16 @@
+mysettings:
+  sleep_time: 1
+  motion_sensitivity: 50
+  motion_blind_time_minutes: 2
+  motion_pulse_count: 1
+  motion_operating_mode: 0
+  motion_enable: "true"
+  dark_threshold: 100
+  twilight_threshold: 500
+  tamper_sensitivity: 10
+  led_status_disable: "false"
+  schedule: "false"
+  temp_under_value: 5
+  login.unprotected: "false"
+  sensors.temperature_unit: "c"
+  sensors.temperature_threshohld: 0.5

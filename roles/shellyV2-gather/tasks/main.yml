@@ -1,0 +1,84 @@
+---
+
+- name: get shelly basic infos
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/shelly"
+  delegate_to: localhost
+  register: basicinfo
+
+- name: translate basic info
+  ansible.builtin.set_fact:
+    shellybasic: "{{ basicinfo.json }}"  
+
+- name: set request shelly chan to Sys.GetConfig
+  ansible.builtin.set_fact:
+    shellychan: "Sys.GetConfig"  
+
+- name: get requested shelly channel from role
+  include_role:
+    name: "shellyV2-get"
+
+- name: convert return val to old skeme
+  ansible.builtin.set_fact:
+    shellyconfig: "{{ authorizedApiResponse.json }}"
+
+- name: set request shelly chan to Sys.GetStatus
+  ansible.builtin.set_fact:
+    shellychan: "Sys.GetStatus"
+
+- name: get requested shelly channel from role
+  include_role:
+    name: "shellyV2-get"
+
+- name: convert return val to old skeme
+  ansible.builtin.set_fact:
+    shellystatus: "authorizedApiResponse.json"  
+
+- name: translate model
+  ansible.builtin.set_fact:
+    shellymodel: "{{ shellybasic.model.split('-')[0] }}"  
+    
+- name: check if the host var file exists
+  ansible.builtin.stat:
+    path: host_vars/{{ inventory_hostname }}.yml
+  register: st
+
+- name: write host file if needed
+  ansible.builtin.copy:
+    dest: host_vars/{{ inventory_hostname }}.yml
+    content: |
+      ---
+      #   --->  host_vars/{{ inventory_hostname }}.yml
+      shelly-type: "{{ shellymodel }}"
+      shelly-mac: "{{ '{}{}:{}{}:{}{}:{}{}:{}{}:{}{}'.format(*shellybasic.mac)|lower }}"
+      shelly-sw-version: "{{ shellybasic.fw_id }}"
+      shellyname: "{{ shellybasic.name }}"
+      shellygen: "{{ shellybasic.gen }}"
+  when: st.stat.exists != true
+
+- name: read whole config file for {{ inventory_hostname }}
+  ansible.builtin.slurp:
+    path: "host_vars/{{ inventory_hostname }}.yml"
+  delegate_to: localhost
+  register: shellycfg
+
+- name: translate config to yaml
+  ansible.builtin.set_fact:
+    mydata: "{{ shellycfg['content'] | b64decode | from_yaml }}"
+
+- name: combine the new values
+  ansible.builtin.set_fact:
+    mydata: "{{ mydata | combine(newdata) }}"  
+  vars:
+    newdata:
+      shelly-type: "{{ shellymodel }}"
+      shelly-mac: "{{ '{}{}:{}{}:{}{}:{}{}:{}{}:{}{}'.format(*shellybasic.mac)|lower }}"
+      shelly-sw-version: "{{ shellybasic.fw_id }}"
+      shellygen: "{{ shellybasic.gen }}"
+      shellyname: "{{ shellybasic.name }}"
+
+- name: write host file
+  ansible.builtin.copy:
+    dest: host_vars/{{ inventory_hostname }}.yml
+    content: "{{ mydata | to_nice_yaml }}"

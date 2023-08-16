@@ -1,0 +1,60 @@
+---
+
+- name: "Wait till shelly {{ inventory_hostname }} is reachable"
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/shelly"
+  delegate_to: localhost
+  register: basicinfo
+  retries: 50
+  delay: 10
+  until: basicinfo is defined and basicinfo.status == 200
+
+- ansible.builtin.set_fact:
+    shellyset:
+      channel: "{{ shellyconfig.shellyset.channel }}"
+      item: "{{ shellyconfig.shellyset.item }}"
+      data: "{{ shellyconfig.shellyset.data }}"
+- include_role:
+    name: shellyV2-set  
+
+- ansible.builtin.set_fact:
+    shellyset:
+      channel: "{{ shellyconfig.shellyset.channel }}"
+      item: "{{ shellyconfig.shellyset.item }}"
+      data: "{{ shellyconfig.shellyset.data }}"
+- include_role:
+    name: shellyV2-set
+
+
+- ansible.builtin.set_fact:
+    shellyset:
+      channel: "{{ cloudconfig.shellyset.channel }}"
+      item: "{{ cloudconfig.shellyset.item }}"
+      data: "{{ cloudconfig.shellyset.data }}"
+- include_role:
+    name: shellyV2-set
+
+- ansible.builtin.set_fact:
+    shellyset:
+      channel: "{{ wificonfig.shellyset.channel }}"
+      item: "{{ wificonfig.shellyset.item }}"
+      data: "{{ wificonfig.shellyset.data }}"
+- include_role:
+    name: shellyV2-set  
+
+- ansible.builtin.set_fact:
+    shellyset:
+      channel: "{{ bleconfig.shellyset.channel }}"
+      item: "{{ bleconfig.shellyset.item }}"
+      data: "{{ bleconfig.shellyset.data }}"
+- include_role:
+    name: shellyV2-set  
+
+- ansible.builtin.set_fact:
+    shellyset:
+      channel: "{{ mqttconfig.shellyset.channel }}"
+      item: "{{ mqttconfig.shellyset.item }}"
+      data: "{{ mqttconfig.shellyset.data }}"
+- include_role:
+    name: shellyV2-set  

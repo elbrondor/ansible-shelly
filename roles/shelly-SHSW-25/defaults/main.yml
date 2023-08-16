@@ -1,0 +1,34 @@
+mysettings:
+  factory_reset_from_switch: true
+  mode: roller
+  led_status_disable: true
+  longpush_time: 1200
+  max_power: 700
+
+mysettingsroller:
+  maxtime: 90
+  maxtime_open: 40
+  maxtime_close: 40
+  ends_delay: 2000
+  default_state: stop
+  swap: false
+  swap_inputs: false
+  input_mode: openclose 
+  button_type: toggle
+  btn_reverse: 0
+  schedule: false
+  obstacle_mode: "while_moving"
+  obstacle_action: stop
+  obstacle_power: 300
+  obstacle_delay: 2
+  positioning: 1
+
+mysettingsrelay:
+  appliance_type: switch
+  default_state: "off"
+  btn_type: "edge"
+  auto_on: 0
+  auto_off: 0
+  max_power: 100
+  schedule: false
+    

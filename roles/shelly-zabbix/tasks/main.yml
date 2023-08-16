@@ -1,0 +1,30 @@
+---
+- name: get shelly information to make sure it's online
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/shelly"
+  delegate_to: localhost
+  register: shellyinfo
+
+- debug: var=shellyinfo      
+
+- name: update or create device in zabbix
+  community.zabbix.zabbix_host:
+    host_name: "{{ inventory_hostname }}"
+    server_url: http://www.in-dorfen.de/zabbix/
+    description: Host updated by ansible
+    login_password: "{{ shellies.mqtt.pass }}"
+    login_user: iot
+    host_groups: "Templates/iot"
+    link_templates:
+      - "Template App shelly devices"
+    interfaces:
+      - type: agent
+        dns: "{{ inventory_hostname }}"
+        ip: "{{ lookup('dig', inventory_hostname)}}"
+        useip: 1
+        main: 1
+    state: "present"
+    status: "enabled"
+    visible_name: "{{ inventory_hostname_short }}"
+  delegate_to: localhost      

@@ -1,0 +1,16 @@
+mysettings:
+  factory_reset_from_switch: true
+  max_power:  3000
+  supply_voltage: 1
+  led_status_disable: true
+  longpush_time: 1200
+
+mysettingsrelay:
+  appliance_type: powermeter
+  default_state: off
+  btn_type: edge
+  btn_reverse: 0
+  auto_on: 0
+  auto_off: 0
+  schedule: false
+  max_power: 3000

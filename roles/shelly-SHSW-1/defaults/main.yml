@@ -1,0 +1,14 @@
+mysettings:
+  factory_reset_from_switch: true
+  supply_voltage: 1
+  led_status_disable: true
+  longpush_time: 1200
+
+mysettingsrelay:
+  appliance_type: switch
+  default_state: "off"
+  btn_type: edge
+  btn_reverse: 0
+  auto_on: 0
+  auto_off: 0
+  schedule: false

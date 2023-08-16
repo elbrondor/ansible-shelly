@@ -1,0 +1,23 @@
+mysettingsroller:
+    btn_reverse: 0
+    button_type: toggle
+    default_state: stop
+    ends_delay: 2000
+    input_mode: openclose
+    maxtime: 90
+    maxtime_close: 40
+    maxtime_open: 40
+    obstacle_action: stop
+    obstacle_delay: 2
+    obstacle_mode: while_moving
+    obstacle_power: 280
+    positioning: 1
+    schedule: false
+    swap: true
+    swap_inputs: false
+shelly-hw-version: prod-191217
+shelly-mac: bc:dd:c2:77:54:b2
+shelly-sw-version: 20230503-095750/v1.13.0-g9aed950
+shelly-type: SHSW-25
+shellygen: 1
+shellyname: shelly09

@@ -1,0 +1,13 @@
+mysettings:
+  factory_reset_from_switch: true
+  dcpower: 0
+  alt_modes: white
+
+mysettingscolor:
+  transition: 1000
+  default_state: "off"
+  auto_on: 0
+  auto_off: 0
+  btn_type: edge
+  btn_reverse: 0
+  schedule: disable

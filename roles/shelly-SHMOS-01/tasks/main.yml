@@ -1,0 +1,10 @@
+---
+
+- name: set all on url /settings
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/settings?{{ item.key }}={{ item.value }}"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  with_dict: "{{ mysettings }}"
