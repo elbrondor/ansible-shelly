@@ -1,4 +1,12 @@
 ---
+# role: shellyV2-set-password
+
+- ansible.builtin.set_fact:
+    api:
+      username: "{{ shellies.web.user }}"
+      password: "{{ shellies.web.pass }}"
+      url: "http://{{ inventory_hostname }}/rpc/Sys.GetConfig"
+      requestMethod: "GET"
 
 - name: get shelly basic infos
   ansible.builtin.uri:
@@ -7,12 +15,22 @@
   delegate_to: localhost
   register: shellyinfo
 
+- name: Make initial request to receive digest response data
+  ansible.builtin.uri:
+    url: "{{ api.url }}"
+    method: "{{ api.requestMethod }}"
+    status_code: 401,200
+  register: PreunauthorizedApiResponse
+
+- debug: var=PreunauthorizedApiResponse
+
 - name: "Calculate HA1 from the digest response formula - sha256(username:realm:password)"
   ansible.builtin.set_fact:
     digestRequestValues: "{{ digestRequestValues | combine ({ 'HA1' : [shellies.web.user, shellyinfo.json.id, shellies.web.pass] | join(':') | hash('sha256') }) }}"
+  when: PreunauthorizedApiResponse.status == 200    
 
 - name: Set password
   ansible.builtin.uri:
     url: "http://{{ inventory_hostname }}/rpc/Shelly.SetAuth?user=\"{{shellies.web.user}}\"&realm=\"{{shellyinfo.json.id}}\"&ha1=\"{{ digestRequestValues.HA1 }}\""
     method: "GET"  
-
+  when: PreunauthorizedApiResponse.status == 200

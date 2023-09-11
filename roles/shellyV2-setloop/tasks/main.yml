@@ -1,0 +1,11 @@
+---
+- debug: 
+    msg: "doing shelly V2 set with dict item {{ shellyset.data }}"
+- debug: var=setloop
+
+- name: "execute inner loop for Items"
+  include_role: 
+    name: shellyV2-setloopinner
+  with_dict: "{{ setloop.value }}"
+  loop_control: 
+    loop_var: setloopinner    

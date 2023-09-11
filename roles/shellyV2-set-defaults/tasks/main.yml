@@ -1,5 +1,4 @@
 ---
-
 - name: "Wait till shelly {{ inventory_hostname }} is reachable"
   ansible.builtin.uri:
     method: get
@@ -11,50 +10,51 @@
   until: basicinfo is defined and basicinfo.status == 200
 
 - ansible.builtin.set_fact:
-    shellyset:
-      channel: "{{ shellyconfig.shellyset.channel }}"
-      item: "{{ shellyconfig.shellyset.item }}"
-      data: "{{ shellyconfig.shellyset.data }}"
-- include_role:
-    name: shellyV2-set  
+    shellyset: "{{ shellyconfig.shellyset }}"
+- include_role: 
+    name: shellyV2-setloop
+  with_dict: "{{ shellyset.data }}"
+  loop_control: 
+    loop_var: setloop
 
 - ansible.builtin.set_fact:
-    shellyset:
-      channel: "{{ shellyconfig.shellyset.channel }}"
-      item: "{{ shellyconfig.shellyset.item }}"
-      data: "{{ shellyconfig.shellyset.data }}"
+    shellyset: "{{ wificonfig.shellyset }}"
+- include_role: 
+    name: shellyV2-setloop
+  with_dict: "{{ shellyset.data }}"
+  loop_control: 
+    loop_var: setloop
+
+- ansible.builtin.set_fact:
+    shellyset: "{{ bleconfig.shellyset }}"
+- include_role: 
+    name: shellyV2-setloopone
+  with_dict: "{{ shellyset.data }}"
+  loop_control: 
+    loop_var: setloopone
+
+- ansible.builtin.set_fact:
+    shellyset: "{{ cloudconfig.shellyset }}"
+- include_role: 
+    name: shellyV2-setloopone
+  with_dict: "{{ shellyset.data }}"
+  loop_control: 
+    loop_var: setloopone
+
+- ansible.builtin.set_fact:
+    shellyset: "{{ mqttconfig.shellyset }}"
+- include_role: 
+    name: shellyV2-setloopone
+  with_dict: "{{ shellyset.data }}"
+  loop_control: 
+    loop_var: setloopone   
+
+- ansible.builtin.set_fact:
+    shellysetsingle: "{{ scheduldel.shellyset }}"
 - include_role:
     name: shellyV2-set
 
-
 - ansible.builtin.set_fact:
-    shellyset:
-      channel: "{{ cloudconfig.shellyset.channel }}"
-      item: "{{ cloudconfig.shellyset.item }}"
-      data: "{{ cloudconfig.shellyset.data }}"
+    shellysetsingle: "{{ webhookdel.shellyset }}"
 - include_role:
-    name: shellyV2-set
-
-- ansible.builtin.set_fact:
-    shellyset:
-      channel: "{{ wificonfig.shellyset.channel }}"
-      item: "{{ wificonfig.shellyset.item }}"
-      data: "{{ wificonfig.shellyset.data }}"
-- include_role:
-    name: shellyV2-set  
-
-- ansible.builtin.set_fact:
-    shellyset:
-      channel: "{{ bleconfig.shellyset.channel }}"
-      item: "{{ bleconfig.shellyset.item }}"
-      data: "{{ bleconfig.shellyset.data }}"
-- include_role:
-    name: shellyV2-set  
-
-- ansible.builtin.set_fact:
-    shellyset:
-      channel: "{{ mqttconfig.shellyset.channel }}"
-      item: "{{ mqttconfig.shellyset.item }}"
-      data: "{{ mqttconfig.shellyset.data }}"
-- include_role:
-    name: shellyV2-set  
+    name: shellyV2-set     

@@ -1,0 +1,14 @@
+---
+- debug: 
+    msg: "doing shelly V2 set with dict item {{ setloopinner }}"
+
+- ansible.builtin.set_fact:
+    shellysetsingle:
+      channel: "{{ shellyset.channel }}"
+      item: "{{ shellyset.item }}"
+      data: "{{ _dict | default({}) | combine({setloop.key: {setloopinner.key: setloopinner.value } }) }}"
+
+- debug: var=shellysetsingle     
+
+- include_role:
+    name: shellyV2-set

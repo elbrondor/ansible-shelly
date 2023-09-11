@@ -1,32 +1,51 @@
 ---
+- debug:
+    msg: "----------------------------------------------------------------------------------------------------"
+- debug: var=shellysetsingle
 
-- debug: msg="Setting on {{ shellyset.channel }}"
+
 - ansible.builtin.set_fact:
     api:
       username: "{{ shellies.web.user }}"
       password: "{{ shellies.web.pass }}"
-      url: "http://{{ inventory_hostname }}/rpc/{{ shellyset.channel }}?{{ shellyset.item }}={{shellyset.data|to_json|replace(' ', '') }}"
+      url: "http://{{ inventory_hostname }}/rpc/{{ shellysetsingle.channel }}?{{ shellysetsingle.item }}={{shellysetsingle.data|to_json|replace(' ', '') }}"
       requestMethod: "GET"
     digestRequestValues:
       nc: "00000001"
       cnonce: "{{ 99999999 | random | to_uuid | hash('md5') }}"
     digestAuthorizationHeader: []
     digestResponseHeaderValues: {}
+  when: shellysetsingle.id is not defined and shellysetsingle.item is defined
+  
+- ansible.builtin.set_fact:
+    api:
+      username: "{{ shellies.web.user }}"
+      password: "{{ shellies.web.pass }}"
+      url: "http://{{ inventory_hostname }}/rpc/{{ shellysetsingle.channel }}?id={{shellysetsingle.id}}&{{ shellysetsingle.item }}={{shellysetsingle.data|to_json|replace(' ', '') }}"
+      requestMethod: "GET"
+    digestRequestValues:
+      nc: "00000001"
+      cnonce: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+    digestAuthorizationHeader: []
+    digestResponseHeaderValues: {}  
+  when: shellysetsingle.id is defined and shellysetsingle.item is defined
+
+- ansible.builtin.set_fact:
+    api:
+      username: "{{ shellies.web.user }}"
+      password: "{{ shellies.web.pass }}"
+      url: "http://{{ inventory_hostname }}/rpc/{{ shellysetsingle.channel }}"
+      requestMethod: "GET"
+    digestRequestValues:
+      nc: "00000001"
+      cnonce: "{{ 99999999 | random | to_uuid | hash('md5') }}"
+    digestAuthorizationHeader: []
+    digestResponseHeaderValues: {}  
+  when: shellysetsingle.item is not defined
 
 - ansible.builtin.set_fact:
     api: "{{ api | combine( {'uri' : api.url.split('.de') | last }) }}"
 
-- name: Make initial request to receive digest response data
-  ansible.builtin.uri:
-    url: "{{ api.url }}"
-    method: "{{ api.requestMethod }}"
-    status_code: 401,200
-  register: PreunauthorizedApiResponse
-
-- name: set initial pwd if is not set
-  ansible.builtin.include_role:
-    name: shellyV2-set-password
-  when: PreunauthorizedApiResponse.status == 200
 
 - name: Make initial request to receive digest response data if it was unseccessful
   ansible.builtin.uri:
@@ -34,7 +53,7 @@
     method: "{{ api.requestMethod }}"
     status_code: 401
   register: unauthorizedApiResponse      
-    
+
 - name: Create a dictionary containing the digest data from the www-authenticate response header
   ansible.builtin.set_fact:
     digestResponseHeaderValues: "{{ digestResponseHeaderValues | default({}) | combine ({ (myitem.split('=')[0] | trim) : (myitem.split('=')[1] | regex_replace('\"', \"\")) }) }}"
@@ -45,10 +64,12 @@
 - name: "Calculate HA1 from the digest response formula - sha256(username:realm:password)"
   ansible.builtin.set_fact:
     digestRequestValues: "{{ digestRequestValues | combine ({ 'HA1' : [api.username, digestResponseHeaderValues.realm, api.password] | join(':') | hash('sha256') }) }}"
+- debug: var=digestRequestValues
 
 - name: "Calculate HA2 from the digest response formula - sha256(requestMethod:URI)"
   ansible.builtin.set_fact:
     digestRequestValues: "{{ digestRequestValues | combine ({ 'HA2' : [api.requestMethod, api.uri] | join(':') | hash('sha256') }) }}"
+- debug: var=digestRequestValues
 
 - name: "Build array containing the digest response values in proper sequence (HA1:nonce:nc:cnonce:qop:HA2)"
   ansible.builtin.set_fact:
@@ -62,10 +83,12 @@
     - "{{ digestRequestValues.HA2 }}"
   loop_control:
     loop_var: myitem
+- debug: var=digestRequestValues      
 
 - name: "Create the final encrypted digest response string by joining the above elements - sha256(HA1:nonce:nc:cnonce:qop:HA2)"
   ansible.builtin.set_fact:
     digestRequestValues: "{{ digestRequestValues | combine({ 'response' : (digestRequestValues['response'] | join(':') | hash('sha256')) }) }}"
+- debug: var=digestRequestValues      
 
 - name: "Build array containing each element of the digest (authorization) header"
   ansible.builtin.set_fact:
@@ -90,16 +113,13 @@
 - name: "Execute the API call"
   ansible.builtin.uri:
     url: "{{ api.url }}"
-    method: "{{ api.requestMethod }}"
+    method: "GET"
     status_code: 200
     headers:
       Authorization: "{{ digestAuthorizationHeader }}"
   register: authorizedApiResponse
 
-- debug:
-    msg: "Rebbot required {{ authorizedApiResponse.json.restart_required }}"
-
 - name: exec reboot if required
   include_role:
     name: "shellyV2-reboot"
-  when: authorizedApiResponse.json.restart_required == true
+  when: shellysetsingle.item is defined and authorizedApiResponse.json.restart_required == true

@@ -1,0 +1,13 @@
+switchconfig:
+  shellyset:
+    channel: "Switch.SetConfig"
+    item: "config"
+    id: 0
+    data:
+      name: "sw00"
+      type: "Switch"
+      initial_state: "off"
+      auto_on: false
+      auto_off: false
+#      in_mode: "Edge"
+

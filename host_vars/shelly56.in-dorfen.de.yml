@@ -2,7 +2,7 @@ mysettings:
     factory_reset_from_switch: true
     led_status_disable: true
     longpush_time: 1200
-    max_power: 800
+    max_power: 1000
     supply_voltage: 1
 mysettingsrelay:
     appliance_type: powermeter
@@ -11,7 +11,7 @@ mysettingsrelay:
     btn_reverse: 0
     btn_type: edge
     default_state: false
-    max_power: 500
+    max_power: 1000
     schedule: false
 shelly-hw-version: prod-191219
 shelly-mac: 40:f5:20:00:70:aa
