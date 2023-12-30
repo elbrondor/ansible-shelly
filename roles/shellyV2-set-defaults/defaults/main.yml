@@ -7,7 +7,6 @@ shellyconfig:
         name: "{{ inventory_hostname_short }}"
         eco_mode: "true"
         discoverable: "false"
-        addon_type: ""
       location:
         tz: "{{ timezone }}"
         lat: "{{ lat }}"

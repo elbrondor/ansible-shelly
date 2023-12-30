@@ -3,6 +3,7 @@
     msg: "----------------------------------------------------------------------------------------------------"
 - debug: var=shellysetsingle
 
+- debug: var=shellysetsingle
 
 - ansible.builtin.set_fact:
     api:

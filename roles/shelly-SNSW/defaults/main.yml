@@ -4,10 +4,9 @@ switchconfig:
     item: "config"
     id: 0
     data:
-      name: "sw00"
-      type: "Switch"
+      type: "switch"
       initial_state: "off"
       auto_on: false
       auto_off: false
-#      in_mode: "Edge"
+      in_mode: "Edge"
 

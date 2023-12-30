@@ -7,7 +7,14 @@
       channel: "{{ shellyset.channel }}"
       item: "{{ shellyset.item }}"
       data: "{{ _dict | default({}) | combine({setloopone.key: setloopone.value }) }}"
-      id: "{{ shellyset.id | default() }}"
+
+- ansible.builtin.set_fact:
+    shellysetsingle:
+      channel: "{{ shellyset.channel }}"
+      item: "{{ shellyset.item }}"
+      data: "{{ _dict | default({}) | combine({setloopone.key: setloopone.value }) }}"
+      id: "{{ shellyset.id  }}"
+  when: shellyset.id is defined and shellyset.id != ''
 
 - include_role:
     name: shellyV2-set    

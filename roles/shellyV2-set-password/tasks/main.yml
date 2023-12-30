@@ -7,6 +7,9 @@
       password: "{{ shellies.web.pass }}"
       url: "http://{{ inventory_hostname }}/rpc/Sys.GetConfig"
       requestMethod: "GET"
+    digestRequestValues:
+      nc: "00000001"
+      cnonce: "{{ 99999999 | random | to_uuid | hash('md5') }}"
 
 - name: get shelly basic infos
   ansible.builtin.uri:
@@ -21,8 +24,6 @@
     method: "{{ api.requestMethod }}"
     status_code: 401,200
   register: PreunauthorizedApiResponse
-
-- debug: var=PreunauthorizedApiResponse
 
 - name: "Calculate HA1 from the digest response formula - sha256(username:realm:password)"
   ansible.builtin.set_fact:
