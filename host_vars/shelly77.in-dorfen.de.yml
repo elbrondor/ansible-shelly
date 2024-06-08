@@ -1,5 +1,15 @@
 shelly-mac: a8:03:2a:bc:85:00
-shelly-sw-version: 20220330-150937/0.10.1-g8d603a2
+shelly-sw-version: 20231219-133950/1.1.0-g34b5d4f
 shelly-type: SNSW
 shellygen: '2'
-shellyname: shelly78
+shellyname: shelly77
+switchconfig:
+    shellyset:
+        channel: Switch.SetConfig
+        data:
+            auto_off: false
+            auto_on: false
+            initial_state: 'off'
+            type: detached
+        id: 0
+        item: config

@@ -1,0 +1,24 @@
+---
+- hosts: all
+  name: init a shelly with default values and gather all information
+  gather_facts: false
+  connection: local
+  roles:
+    - shelly-get-gen
+
+  tasks:
+  - name: all for gen 1 devices
+    block:
+      - name: shelly v1 fwupdate
+        ansible.builtin.include_role:
+          name: shelly-fwupdate
+    when: shellygen == 1
+
+  - name: all for gen 2 devices
+    block: 
+      - name: shelly v2 reboot
+        ansible.builtin.include_role:
+          name: shellyV2-reboot
+    when: shellygen == "2"
+
+        

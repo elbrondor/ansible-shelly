@@ -1,0 +1,22 @@
+mysettings:
+    dark_threshold: 100
+    led_status_disable: 'false'
+    login.unprotected: 'false'
+    motion_blind_time_minutes: 2
+    motion_enable: 'true'
+    motion_operating_mode: 0
+    motion_pulse_count: 1
+    motion_sensitivity: 64
+    schedule: 'false'
+    sensors.temperature_threshohld: 0.5
+    sensors.temperature_unit: c
+    sleep_time: 1
+    tamper_sensitivity: 10
+    temp_under_value: 5
+    twilight_threshold: 500
+shelly-hw-version: dev-prototype
+shelly-mac: 58:8e:81:61:73:1a
+shelly-sw-version: 20240306-093418/v2.2.3@8f5e4729
+shelly-type: SHMOS-02
+shellygen: 1
+shellyname: shelly11

@@ -1,0 +1,14 @@
+---
+- hosts: all
+  name: check if new fw availibale
+  gather_facts: false
+  connection: local
+  roles:
+    - shelly-get-gen
+
+  tasks:
+  - name: scan for new firmware
+    ansible.builtin.include_role:
+      name: shelly-fwupdate
+    when: shellygen == 1
+

@@ -46,9 +46,11 @@ bleconfig:
     channel: "BLE.SetConfig"
     item: "config"
     data:
-      enable: false
-      rpc: false
-      observer: false
+      enable: true
+      rpc: 
+        enable: false
+      observer: 
+        enable: true
 
 cloudconfig:
   shellyset:

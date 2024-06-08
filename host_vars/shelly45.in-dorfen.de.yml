@@ -1,0 +1,15 @@
+shelly-mac: 34:85:18:e0:83:04
+shelly-sw-version: 20240522-112848/1.3.2-g34c651b
+shelly-type: SNSW
+shellygen: '2'
+shellyname: shelly45
+switchconfig:
+    shellyset:
+        channel: Switch.SetConfig
+        data:
+            auto_off: false
+            auto_on: false
+            initial_state: 'off'
+            type: button
+        id: 0
+        item: config

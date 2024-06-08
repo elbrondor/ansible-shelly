@@ -1,0 +1,10 @@
+---
+
+- ansible.builtin.set_fact:
+    shellyset: "{{ switchconfig.shellyset }}"
+- include_role: 
+    name: shellyV2-setloopone
+  with_dict: "{{ shellyset.data }}"
+  loop_control: 
+    loop_var: setloopone
+

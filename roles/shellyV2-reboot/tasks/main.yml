@@ -5,7 +5,7 @@
       username: "{{ shellies.web.user }}"
       password: "{{ shellies.web.pass }}"
       url: "http://{{ inventory_hostname }}/rpc/Shelly.Reboot"
-      requestMethod: "POST"
+      requestMethod: "GET"
     digestRequestValues:
       nc: "00000001"
       cnonce: "{{ 99999999 | random | to_uuid | hash('md5') }}"
@@ -19,8 +19,9 @@
     url: "{{ api.url }}"
     method: "{{ api.requestMethod }}"
     status_code: 401
+  delegate_to: localhost
   register: unauthorizedApiResponse
-
+  
 - name: Create a dictionary containing the digest data from the www-authenticate response header
   ansible.builtin.set_fact:
     digestResponseHeaderValues: "{{ digestResponseHeaderValues | default({}) | combine ({ (iitem.split('=')[0] | trim) : (iitem.split('=')[1] | regex_replace('\"', \"\")) }) }}"

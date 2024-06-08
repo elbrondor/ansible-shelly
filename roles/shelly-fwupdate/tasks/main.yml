@@ -1,0 +1,68 @@
+---
+
+- name: initiate check if new fw availible
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/ota/check"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+    status_code: 200,404
+  delegate_to: localhost
+  register: candocheck
+
+- name: delay till shelly are getting new fw
+  ansible.builtin.wait_for:
+    timeout: 3
+  delegate_to: localhost
+  when: candocheck.status == 200
+
+- name: wait till check is done
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/ota/check"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  register: response
+  retries: 50
+  delay: 10
+  until: response is defined and response.json.status == "ok"
+  when: candocheck.status == 200
+
+- name: get status has new firmware
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/ota"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  register: response    
+
+- debug: var=response.json.has_update    
+
+- name: if new fw availible initiate the update
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/ota?update=true"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  register: returnstat
+  when: response is defined and response.json.has_update == true
+
+- name: wait till update is done if needed
+  ansible.builtin.uri:
+    method: get
+    url: "http://{{ inventory_hostname }}/ota"
+    url_password: "{{ shellies.web.pass }}"
+    url_username: "{{ shellies.web.user }}"
+  delegate_to: localhost
+  register: waitrespnse
+  retries: 50
+  delay: 10
+  until: waitrespnse is defined and waitrespnse.has_update == false
+  when: response is defined and response.json.has_update == true
+
+- debug:
+    msg: "Firmware update done...."
+  when: response is defined and response.json.has_update == true

@@ -1,14 +1,6 @@
-mysettingsrelay:
-    appliance_type: switch
-    auto_off: 0
-    auto_on: 0
-    btn_reverse: 0
-    btn_type: detached
-    default_state: 'off'
-    schedule: false
-shelly-hw-version: prod-2019-08
-shelly-mac: c8:2b:96:11:58:2b
-shelly-sw-version: 20230503-095514/v1.13.0-g9aed950
-shelly-type: SHSW-1
+shelly-hw-version: dev-prototype
+shelly-mac: 8c:f6:81:a5:3a:28
+shelly-sw-version: 20231122-131719/v2.2.2@a458c94d
+shelly-type: SHMOS-02
 shellygen: 1
 shellyname: shelly38

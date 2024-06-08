@@ -10,7 +10,7 @@ mysettingsrelay:
     schedule: false
 shelly-hw-version: prod-191018
 shelly-mac: f4:cf:a2:6d:9c:51
-shelly-sw-version: 20230503-101325/v1.13.0-g9aed950
+shelly-sw-version: 20230913-113610/v1.14.0-gcb84623
 shelly-type: SHPLG2-1
 shellygen: 1
 shellyname: shelly63

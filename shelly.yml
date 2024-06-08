@@ -22,6 +22,15 @@
         - shellyV2-gather
     when: shellygen == "2"
 
+  - name: set v3 roles
+    ansible.builtin.set_fact:
+      shellyroles:
+        - shellyV2-set-password
+        - shellyV2-set-defaults
+        - shellyV2-gather
+    when: shellygen == "3"
+
+
   - name: play all neded gen 1 roles
     include_role:
       name: "{{ item }}"
@@ -47,3 +56,9 @@
     ansible.builtin.include_role:
       name: shellyV2-reboot
     when: shellygen == "2"
+
+  - name: shelly v3 reboot
+    ansible.builtin.include_role:
+      name: shellyV2-reboot
+    when: shellygen == "3"
+
